@@ -1,0 +1,7 @@
+__pycache__
+*.pyc
+.git
+.env
+poster_progress.json
+test_sources.py
+auto_fix_posters.py

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ movie.original_title }} – CineMatch</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --card: #16161f;
+      --border: rgba(255,255,255,0.07);
+      --accent: #e50914;
+      --accent2: #ff6b35;
+      --text: #f0f0f0;
+      --muted: #888;
+      --pill-bg: rgba(255,255,255,0.08);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,10,15,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 3rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 0.04em;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-decoration: none;
+    }
+    .back-btn {
+      display: flex; align-items: center; gap: 0.4rem;
+      background: var(--pill-bg); border: 1px solid var(--border);
+      border-radius: 30px; padding: 0.4rem 1rem;
+      color: #ccc; font-size: 0.84rem; text-decoration: none;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.15); }
+
+    /* ── BACKDROP / HERO ── */
+    .detail-hero {
+      position: relative;
+      min-height: 520px;
+      display: flex; align-items: flex-end;
+      padding: 3rem 3rem 2.5rem;
+      overflow: hidden;
+    }
+
+    .detail-hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 120% 80% at 50% -20%, rgba(229,9,20,0.1), transparent 60%);
+      z-index: 0;
+    }
+
+    .backdrop-blur {
+      position: absolute; inset: 0; z-index: 0;
+      overflow: hidden;
+    }
+    .backdrop-blur img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      filter: blur(32px) brightness(0.18) saturate(1.4);
+      transform: scale(1.05);
+    }
+
+    .detail-overlay {
+      position: absolute; inset: 0; z-index: 1;
+      background: linear-gradient(to top, var(--bg) 0%, rgba(10,10,15,0.3) 50%, transparent 100%);
+    }
+
+    .hero-content {
+      position: relative; z-index: 2;
+      display: flex; gap: 2.5rem; align-items: flex-end;
+      width: 100%;
+    }
+
+    .poster-main {
+      flex-shrink: 0;
+      width: 200px; height: 300px;
+      border-radius: 12px; overflow: hidden;
+      border: 2px solid rgba(255,255,255,0.12);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    }
+    .poster-main img { width: 100%; height: 100%; object-fit: cover; }
+    .poster-main .ph {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f1923 100%);
+      gap: 0.4rem;
+    }
+    .poster-main .ph .ph-letter {
+      font-family: 'Bebas Neue', sans-serif; font-size: 5rem; line-height: 1;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .poster-main .ph .ph-icon { font-size: 1.4rem; opacity: 0.25; }
+
+    .hero-meta { flex: 1; }
+    .hero-meta .genre-tag {
+      display: inline-block;
+      background: rgba(229,9,20,0.18); border: 1px solid rgba(229,9,20,0.35);
+      color: #ff8080; border-radius: 4px;
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em;
+      padding: 3px 9px; margin-bottom: 0.75rem;
+    }
+    .hero-meta h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      letter-spacing: 0.03em; line-height: 1.05;
+    }
+    .hero-meta .tagline {
+      color: var(--muted); font-size: 0.95rem;
+      margin-top: 0.3rem; font-style: italic; font-weight: 300;
+    }
+    .hero-actions {
+      display: flex; gap: 0.75rem; margin-top: 1.5rem;
+    }
+    .btn-primary {
+      display: flex; align-items: center; gap: 0.4rem;
+      background: var(--accent); border: none; border-radius: 6px;
+      color: #fff; font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem; font-weight: 600;
+      padding: 0.6rem 1.5rem; cursor: pointer; text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-secondary {
+      display: flex; align-items: center; gap: 0.4rem;
+      background: rgba(255,255,255,0.08); border: 1px solid var(--border);
+      border-radius: 6px; color: var(--text); font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem; font-weight: 500;
+      padding: 0.6rem 1.5rem; cursor: pointer; text-decoration: none;
+      transition: background 0.15s;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.14); }
+
+    /* ── BODY CONTENT ── */
+    .detail-body {
+      padding: 2.5rem 3rem;
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 3rem;
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem; letter-spacing: 0.04em;
+      margin-bottom: 1rem;
+    }
+
+    .overview-text {
+      font-size: 0.97rem; line-height: 1.8;
+      color: #ccc; font-weight: 300; max-width: 680px;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {}
+    .info-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    .info-row {
+      display: flex; justify-content: space-between;
+      align-items: center; padding: 0.55rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.86rem;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-row .label { color: var(--muted); }
+    .info-row .value {
+      font-weight: 500; text-align: right;
+      max-width: 160px; overflow: hidden;
+      text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    /* ── RECOMMENDATIONS ── */
+    .reco-section {
+      grid-column: 1 / -1;
+      padding-top: 1rem; border-top: 1px solid var(--border);
+    }
+
+    .reco-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1.1rem; margin-top: 1rem;
+    }
+
+    .movie-card {
+      background: var(--card);
+      border-radius: 10px; overflow: hidden;
+      border: 1px solid var(--border);
+      cursor: pointer; text-decoration: none;
+      color: var(--text); display: flex; flex-direction: column;
+      transition: transform 0.22s ease, border-color 0.22s, box-shadow 0.22s;
+    }
+    .movie-card:hover {
+      transform: translateY(-4px) scale(1.02);
+      border-color: rgba(229,9,20,0.5);
+      box-shadow: 0 10px 36px rgba(0,0,0,0.6);
+    }
+    .poster-wrap {
+      position: relative; width: 100%; padding-top: 145%;
+      background: var(--surface); overflow: hidden;
+    }
+    .poster-wrap img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+    .movie-card:hover .poster-wrap img { transform: scale(1.06); }
+    .poster-placeholder {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 0.5rem;
+      background: linear-gradient(160deg, #12121e 0%, #1a1a2e 60%, #0d0d18 100%);
+    }
+    .poster-placeholder::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(229,9,20,0.12), transparent 70%);
+    }
+    .poster-placeholder .ph-letter {
+      font-family: 'Bebas Neue', sans-serif; font-size: 3.5rem; line-height: 1;
+      color: rgba(229,9,20,0.85); position: relative; z-index: 1;
+    }
+    .poster-placeholder .ph-line {
+      width: 28px; height: 2px; background: rgba(229,9,20,0.4);
+      border-radius: 2px; position: relative; z-index: 1;
+    }
+    .poster-placeholder small {
+      font-size: 0.68rem; color: rgba(255,255,255,0.45);
+      text-align: center; padding: 0 0.6rem; line-height: 1.4;
+      position: relative; z-index: 1;
+    }
+    .genre-badge {
+      position: absolute; top: 7px; left: 7px;
+      background: rgba(10,10,15,0.85); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 4px; font-size: 0.66rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.07em; color: #ddd; padding: 2px 6px;
+    }
+    .card-info { padding: 0.65rem 0.7rem 0.85rem; flex: 1; display: flex; flex-direction: column; gap: 0.18rem; }
+    .card-title { font-size: 0.84rem; font-weight: 500; line-height: 1.3;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .card-genre { font-size: 0.72rem; color: var(--muted); }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 3rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    footer p { font-size: 0.8rem; color: var(--muted); }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="/" class="logo">CineMatch</a>
+    <a href="/" class="back-btn">← Back to Home</a>
+  </nav>
+
+  <!-- HERO -->
+  <div class="detail-hero">
+    {% if poster %}
+    <div class="backdrop-blur">
+      <img src="{{ poster }}" alt="" aria-hidden="true"/>
+    </div>
+    {% endif %}
+    <div class="detail-overlay"></div>
+
+    <div class="hero-content">
+      <div class="poster-main">
+        {% if poster %}
+        <img src="{{ poster }}" alt="{{ movie.original_title }}"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"/>
+        {% endif %}
+        <div class="ph"{% if poster %} style="display:none"{% endif %}>
+          <span class="ph-letter">{{ movie.original_title[0] | upper }}</span>
+          <span class="ph-icon">🎬</span>
+        </div>
+      </div>
+
+      <div class="hero-meta">
+        {% if movie.genre %}
+        <span class="genre-tag">{{ movie.genre.split()[0] if movie.genre else '' }}</span>
+        {% endif %}
+        <h1>{{ movie.original_title }}</h1>
+        {% if movie.tagline is defined and movie.tagline %}
+        <p class="tagline">"{{ movie.tagline }}"</p>
+        {% endif %}
+
+        <div class="hero-actions">
+          <a href="#overview" class="btn-primary">▶ Read More</a>
+          <a href="/" class="btn-secondary">＋ Find Similar</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAIL BODY -->
+  <div class="detail-body">
+
+    <!-- OVERVIEW -->
+    <div id="overview">
+      <p class="section-title">Overview</p>
+      <p class="overview-text">{{ movie.overview }}</p>
+    </div>
+
+    <!-- SIDEBAR INFO -->
+    <div class="sidebar">
+      <div class="info-card">
+        <div class="info-row">
+          <span class="label">Genre</span>
+          <span class="value">{{ movie.genre or '—' }}</span>
+        </div>
+        {% if movie.release_date is defined and movie.release_date %}
+        <div class="info-row">
+          <span class="label">Release</span>
+          <span class="value">{{ movie.release_date }}</span>
+        </div>
+        {% endif %}
+        {% if movie.vote_average is defined and movie.vote_average %}
+        <div class="info-row">
+          <span class="label">Rating</span>
+          <span class="value" style="color:#facc15">★ {{ movie.vote_average }}</span>
+        </div>
+        {% endif %}
+        {% if movie.vote_count is defined and movie.vote_count %}
+        <div class="info-row">
+          <span class="label">Votes</span>
+          <span class="value">{{ "{:,}".format(movie.vote_count|int) }}</span>
+        </div>
+        {% endif %}
+        {% if movie.original_language is defined and movie.original_language %}
+        <div class="info-row">
+          <span class="label">Language</span>
+          <span class="value">{{ movie.original_language | upper }}</span>
+        </div>
+        {% endif %}
+        {% if movie.popularity is defined and movie.popularity %}
+        <div class="info-row">
+          <span class="label">Popularity</span>
+          <span class="value">{{ "%.1f"|format(movie.popularity|float) }}</span>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- SEARCH SIMILAR from SIDEBAR -->
+      <form action="/recommend" method="POST">
+        <input type="hidden" name="movie" value="{{ movie.original_title }}"/>
+        <button type="submit" style="
+          width: 100%; background: var(--accent); border: none;
+          border-radius: 8px; color: #fff; font-family: 'DM Sans', sans-serif;
+          font-size: 0.9rem; font-weight: 600; padding: 0.75rem;
+          cursor: pointer; transition: opacity 0.15s;
+        ">🎯 Find Similar Movies</button>
+      </form>
+    </div>
+
+    <!-- RECOMMENDATIONS SECTION -->
+    {% if recommendations %}
+    <div class="reco-section">
+      <p class="section-title">You Might Also Like</p>
+      <div class="reco-grid">
+        {% for rec in recommendations %}
+        <a href="/movie/{{ rec.id }}" class="movie-card">
+          <div class="poster-wrap">
+            {% if rec.poster %}
+            <img src="{{ rec.poster }}" alt="{{ rec.title }}" loading="lazy"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"/>
+            {% endif %}
+            <div class="poster-placeholder"{% if rec.poster %} style="display:none"{% endif %}>
+              <span class="ph-letter">{{ rec.title[0] | upper }}</span>
+              <span class="ph-line"></span>
+              <small>{{ rec.title }}</small>
+            </div>
+            {% if rec.genre %}
+            <span class="genre-badge">{{ rec.genre.split()[0] if rec.genre else '' }}</span>
+            {% endif %}
+          </div>
+          <div class="card-info">
+            <div class="card-title">{{ rec.title }}</div>
+            <div class="card-genre">{{ rec.genre.split()[0] if rec.genre else 'Unknown' }}</div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <footer>
+    <p>CineMatch &copy; 2025 — ML-powered recommendations</p>
+    <p>Powered by TF-IDF + Cosine Similarity</p>
+  </footer>
+
+</body>
+</html>

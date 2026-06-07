@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CineMatch – Discover Your Next Film</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0f; --surface: #111118; --card: #16161f; --card-hover: #1e1e2a;
+      --border: rgba(255,255,255,0.07); --accent: #e50914; --accent2: #ff6b35;
+      --text: #f0f0f0; --muted: #888; --pill-bg: rgba(255,255,255,0.08);
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,10,15,0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 3rem; display: flex; align-items: center; justify-content: space-between; height: 64px;
+    }
+    .logo {
+      font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 0.04em;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      text-decoration: none;
+    }
+    .search-bar {
+      display: flex; align-items: center; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 40px; padding: 0 1rem;
+      width: 360px; transition: border-color 0.2s, box-shadow 0.2s; position: relative;
+    }
+    .search-bar:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(229,9,20,0.15); }
+    .search-bar input {
+      background: none; border: none; outline: none; color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-size: 0.9rem; flex: 1; padding: 0.6rem 0.5rem;
+    }
+    .search-bar input::placeholder { color: var(--muted); }
+    .search-bar button {
+      background: var(--accent); border: none; border-radius: 20px; color: #fff;
+      font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600;
+      padding: 0.38rem 1rem; cursor: pointer; transition: opacity 0.15s;
+    }
+    .search-bar button:hover { opacity: 0.85; }
+
+    .hero {
+      background: linear-gradient(180deg, rgba(229,9,20,0.06) 0%, transparent 60%),
+                  radial-gradient(ellipse 80% 60% at 50% -10%, rgba(229,9,20,0.12), transparent);
+      padding: 3.5rem 3rem 2rem;
+    }
+    .hero h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.2rem,5vw,3.6rem); letter-spacing: 0.03em; line-height: 1.05; max-width: 560px; }
+    .hero h1 span { color: var(--accent); }
+    .hero p { color: var(--muted); font-size: 0.95rem; margin-top: 0.5rem; font-weight: 300; }
+
+    .genre-section { padding: 1.5rem 3rem 0; }
+    .genre-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 0.75rem; }
+    .pills { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .pill {
+      background: var(--pill-bg); border: 1px solid var(--border); color: #ccc;
+      border-radius: 30px; padding: 0.38rem 1rem; font-size: 0.82rem;
+      text-decoration: none; cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s; white-space: nowrap;
+    }
+    .pill:hover, .pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    /* ── SEARCHED MOVIE SPOTLIGHT ── */
+    .searched-spotlight {
+      margin: 2rem 3rem 0;
+      background: var(--card);
+      border: 1px solid rgba(229,9,20,0.3);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      gap: 0;
+    }
+    .spotlight-poster { flex-shrink: 0; width: 180px; height: 270px; }
+    .spotlight-poster img { width: 100%; height: 100%; object-fit: cover; }
+    .spotlight-poster .ph {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: linear-gradient(145deg, #1a1a2e, #0f1923); gap: 0.4rem;
+    }
+    .spotlight-poster .ph .ph-letter {
+      font-family: 'Bebas Neue', sans-serif; font-size: 5rem; line-height: 1;
+      color: rgba(229,9,20,0.85);
+    }
+    .spotlight-info { flex: 1; padding: 1.5rem 2rem; display: flex; flex-direction: column; gap: 0.6rem; }
+    .spotlight-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); font-weight: 600; }
+    .spotlight-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.6rem, 3vw, 2.4rem); letter-spacing: 0.03em; line-height: 1.05; }
+    .spotlight-genre {
+      display: inline-block;
+      background: rgba(229,9,20,0.15); border: 1px solid rgba(229,9,20,0.3);
+      color: #ff8080; border-radius: 4px;
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em;
+      padding: 3px 9px; width: fit-content;
+    }
+    .spotlight-overview { font-size: 0.88rem; line-height: 1.75; color: #bbb; font-weight: 300; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .spotlight-btn {
+      margin-top: auto;
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: var(--accent); border: none; border-radius: 6px;
+      color: #fff; font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem; font-weight: 600; padding: 0.55rem 1.4rem;
+      text-decoration: none; width: fit-content; transition: opacity 0.15s;
+    }
+    .spotlight-btn:hover { opacity: 0.85; }
+
+    /* ── SECTION ── */
+    .section-header { padding: 2.5rem 3rem 1.2rem; display: flex; align-items: baseline; gap: 0.75rem; }
+    .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 0.04em; }
+
+    /* ── GRID ── */
+    .movie-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+      gap: 1.2rem; padding: 0 3rem 2rem;
+    }
+    .movie-card {
+      background: var(--card); border-radius: 10px; overflow: hidden;
+      border: 1px solid var(--border); cursor: pointer; text-decoration: none;
+      color: var(--text); display: flex; flex-direction: column;
+      transition: transform 0.22s ease, border-color 0.22s, box-shadow 0.22s;
+    }
+    .movie-card:hover { transform: translateY(-5px) scale(1.02); border-color: rgba(229,9,20,0.5); box-shadow: 0 12px 40px rgba(0,0,0,0.6); }
+    .poster-wrap { position: relative; width: 100%; padding-top: 145%; background: var(--surface); overflow: hidden; }
+    .poster-wrap img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+    .movie-card:hover .poster-wrap img { transform: scale(1.06); }
+    .poster-placeholder {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 0.6rem;
+      background: linear-gradient(160deg, #12121e 0%, #1a1a2e 60%, #0d0d18 100%);
+    }
+    .poster-placeholder::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(229,9,20,0.12), transparent 70%);
+    }
+    .poster-placeholder .ph-letter { font-family: 'Bebas Neue', sans-serif; font-size: 4.5rem; line-height: 1; color: rgba(229,9,20,0.85); position: relative; z-index: 1; }
+    .poster-placeholder .ph-line { width: 32px; height: 2px; background: rgba(229,9,20,0.4); border-radius: 2px; position: relative; z-index: 1; }
+    .poster-placeholder .ph-title { font-size: 0.72rem; font-weight: 500; color: rgba(255,255,255,0.5); text-align: center; padding: 0 0.8rem; line-height: 1.4; position: relative; z-index: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .genre-badge { position: absolute; top: 8px; left: 8px; background: rgba(10,10,15,0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: #ddd; padding: 3px 7px; }
+    .card-info { padding: 0.7rem 0.75rem 0.9rem; flex: 1; display: flex; flex-direction: column; gap: 0.2rem; }
+    .card-title { font-size: 0.86rem; font-weight: 500; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .card-genre { font-size: 0.74rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* ── LOAD MORE ── */
+    .load-more-wrap {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 0.5rem 3rem 3rem; gap: 0.75rem;
+    }
+    #load-more-btn {
+      display: flex; align-items: center; gap: 0.6rem;
+      background: transparent;
+      border: 1px solid rgba(229,9,20,0.5);
+      color: #fff; font-family: 'DM Sans', sans-serif;
+      font-size: 0.92rem; font-weight: 600;
+      padding: 0.7rem 2.2rem; border-radius: 40px; cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+    #load-more-btn:hover:not(:disabled) {
+      background: rgba(229,9,20,0.12);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(229,9,20,0.1);
+    }
+    #load-more-btn:disabled { opacity: 0.4; cursor: default; }
+    #load-more-btn .spinner {
+      width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin 0.7s linear infinite; display: none;
+    }
+    #load-more-btn.loading .spinner { display: block; }
+    #load-more-btn.loading .btn-text { opacity: 0.6; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .load-more-count { font-size: 0.78rem; color: var(--muted); }
+
+    /* ── NOT FOUND ── */
+    .not-found { text-align: center; padding: 5rem 2rem; color: var(--muted); }
+    .not-found .big { font-size: 3rem; }
+    .not-found p { margin-top: 0.5rem; font-size: 0.95rem; }
+
+    footer { border-top: 1px solid var(--border); padding: 2rem 3rem; display: flex; align-items: center; justify-content: space-between; }
+    footer p { font-size: 0.8rem; color: var(--muted); }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="/" class="logo">CineMatch</a>
+    <form action="/recommend" method="POST" class="search-bar">
+      <input type="text" name="movie" id="movie-search"
+             placeholder="Search a movie to get recommendations…"
+             value="{{ searched_movie or '' }}" autocomplete="off"/>
+      <ul id="suggestions" style="
+        display:none; position:absolute; top:110%; left:0; right:0;
+        background:#1a1a24; border:1px solid rgba(255,255,255,0.1);
+        border-radius:10px; list-style:none; max-height:220px;
+        overflow-y:auto; z-index:999; padding:0.3rem 0;
+      "></ul>
+      <button type="submit">Find</button>
+    </form>
+    <div style="width:160px; text-align:right; font-size:0.8rem; color:var(--muted);">Powered by ML</div>
+  </nav>
+
+  <!-- HERO (only on homepage) -->
+  {% if not searched_movie %}
+  <div class="hero">
+    <h1>Discover films<br>you'll <span>love</span></h1>
+    <p>Search a movie above — we'll find your next obsession.</p>
+  </div>
+  {% endif %}
+
+  <!-- GENRE FILTER -->
+  <div class="genre-section">
+    <p class="genre-label">Browse by genre</p>
+    <div class="pills">
+      <a href="/" class="pill {% if not selected_genre %}active{% endif %}">All</a>
+      {% for genre in genres %}
+      <a href="/genre/{{ genre }}" class="pill {% if selected_genre == genre %}active{% endif %}">{{ genre }}</a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ══ SEARCH RESULT ══ -->
+  {% if searched_movie %}
+
+    {% if searched_card %}
+      <div class="searched-spotlight">
+        <div class="spotlight-poster">
+          {% if searched_card.poster %}
+          <img src="{{ searched_card.poster }}" alt="{{ searched_card.title }}"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"/>
+          {% endif %}
+          <div class="ph"{% if searched_card.poster %} style="display:none"{% endif %}>
+            <span class="ph-letter">{{ searched_card.title[0] | upper }}</span>
+          </div>
+        </div>
+        <div class="spotlight-info">
+          <span class="spotlight-label">🔍 You searched for</span>
+          <div class="spotlight-title">{{ searched_card.title }}</div>
+          {% if searched_card.genre %}
+          <span class="spotlight-genre">{{ searched_card.genre.split()[0] }}</span>
+          {% endif %}
+          {% if searched_card.overview %}
+          <p class="spotlight-overview">{{ searched_card.overview }}</p>
+          {% endif %}
+          <a href="/movie/{{ searched_card.id }}" class="spotlight-btn">▶ View Full Details</a>
+        </div>
+      </div>
+
+      {% if recommendations %}
+      <div class="section-header">
+        <span class="section-title">Because you watched "{{ searched_card.title }}"</span>
+      </div>
+      <div class="movie-grid">
+        {% for movie in recommendations %}
+        <a href="/movie/{{ movie.id }}" class="movie-card">
+          <div class="poster-wrap">
+            {% if movie.poster %}
+            <img src="{{ movie.poster }}" alt="{{ movie.title }}" loading="lazy"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"/>
+            {% endif %}
+            <div class="poster-placeholder"{% if movie.poster %} style="display:none"{% endif %}>
+              <span class="ph-letter">{{ movie.title[0] | upper }}</span>
+              <span class="ph-line"></span>
+              <span class="ph-title">{{ movie.title }}</span>
+            </div>
+            {% if movie.genre %}
+            <span class="genre-badge">{{ movie.genre.split()[0] if movie.genre else '' }}</span>
+            {% endif %}
+          </div>
+          <div class="card-info">
+            <div class="card-title">{{ movie.title }}</div>
+            <div class="card-genre">{{ movie.genre.split()[0] if movie.genre else 'Unknown' }}</div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+    {% else %}
+      <div class="not-found">
+        <div class="big">🎬</div>
+        <p>No exact match for <strong>"{{ searched_movie }}"</strong> — try a different title.</p>
+      </div>
+    {% endif %}
+
+  {% else %}
+    <!-- HOMEPAGE / GENRE PAGE -->
+    <div class="section-header">
+      <span class="section-title">
+        {% if selected_genre %}{{ selected_genre }}{% else %}Trending Now{% endif %}
+      </span>
+    </div>
+    <div class="movie-grid" id="movie-grid">
+      {% for movie in movies %}
+      <a href="/movie/{{ movie.id }}" class="movie-card">
+        <div class="poster-wrap">
+          {% if movie.poster %}
+          <img src="{{ movie.poster }}" alt="{{ movie.title }}" loading="lazy"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"/>
+          {% endif %}
+          <div class="poster-placeholder"{% if movie.poster %} style="display:none"{% endif %}>
+            <span class="ph-letter">{{ movie.title[0] | upper }}</span>
+            <span class="ph-line"></span>
+            <span class="ph-title">{{ movie.title }}</span>
+          </div>
+          {% if movie.genre %}
+          <span class="genre-badge">{{ movie.genre.split()[0] if movie.genre else '' }}</span>
+          {% endif %}
+        </div>
+        <div class="card-info">
+          <div class="card-title">{{ movie.title }}</div>
+          <div class="card-genre">{{ movie.genre.split()[0] if movie.genre else 'Unknown' }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- LOAD MORE -->
+    <div class="load-more-wrap" id="load-more-wrap">
+      <button id="load-more-btn" data-offset="{{ current_offset }}" data-genre="{{ selected_genre or '' }}">
+        <span class="spinner"></span>
+        <span class="btn-text">Load More Movies</span>
+      </button>
+      <span class="load-more-count" id="load-more-count">Showing {{ movies|length }} movies</span>
+    </div>
+  {% endif %}
+
+  <footer>
+    <p>CineMatch &copy; 2025 — ML-powered recommendations</p>
+    <p style="color:var(--muted); font-size:0.78rem;">Powered by TF-IDF + Cosine Similarity</p>
+  </footer>
+
+<script>
+  /* ── Autocomplete ── */
+  const input = document.getElementById('movie-search');
+  const list  = document.getElementById('suggestions');
+  let timer;
+  if (input) {
+    input.addEventListener('input', () => {
+      clearTimeout(timer);
+      const q = input.value.trim();
+      if (q.length < 2) { list.style.display = 'none'; return; }
+      timer = setTimeout(() => {
+        fetch('/autocomplete?q=' + encodeURIComponent(q))
+          .then(r => r.json())
+          .then(titles => {
+            list.innerHTML = '';
+            if (!titles.length) { list.style.display = 'none'; return; }
+            titles.forEach(t => {
+              const li = document.createElement('li');
+              li.textContent = t;
+              li.style.cssText = 'padding:0.55rem 1rem; cursor:pointer; font-size:0.88rem; color:#ddd;';
+              li.addEventListener('mouseenter', () => li.style.background = 'rgba(229,9,20,0.15)');
+              li.addEventListener('mouseleave', () => li.style.background = '');
+              li.addEventListener('click', () => { input.value = t; list.style.display = 'none'; input.closest('form').submit(); });
+              list.appendChild(li);
+            });
+            list.style.display = 'block';
+          });
+      }, 250);
+    });
+    document.addEventListener('click', e => { if (!e.target.closest('.search-bar')) list.style.display = 'none'; });
+  }
+
+  /* ── Load More ── */
+  const btn       = document.getElementById('load-more-btn');
+  const grid      = document.getElementById('movie-grid');
+  const countEl   = document.getElementById('load-more-count');
+
+  function buildCard(movie) {
+    const firstLetter = (movie.title || '?')[0].toUpperCase();
+    const genreWord   = movie.genre ? movie.genre.split(' ')[0] : 'Unknown';
+    const hasPoster   = movie.poster && movie.poster.trim() !== '';
+
+    return `
+      <a href="/movie/${movie.id}" class="movie-card">
+        <div class="poster-wrap">
+          ${hasPoster ? `<img src="${movie.poster}" alt="${movie.title.replace(/"/g,'&quot;')}" loading="lazy"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"/>` : ''}
+          <div class="poster-placeholder"${hasPoster ? ' style="display:none"' : ''}>
+            <span class="ph-letter">${firstLetter}</span>
+            <span class="ph-line"></span>
+            <span class="ph-title">${movie.title}</span>
+          </div>
+          ${movie.genre ? `<span class="genre-badge">${genreWord}</span>` : ''}
+        </div>
+        <div class="card-info">
+          <div class="card-title">${movie.title}</div>
+          <div class="card-genre">${genreWord}</div>
+        </div>
+      </a>`;
+  }
+
+  if (btn && grid) {
+    let showing = parseInt(btn.dataset.offset) || 24;
+
+    btn.addEventListener('click', () => {
+      const offset = parseInt(btn.dataset.offset);
+      const genre  = btn.dataset.genre || '';
+
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      const url = `/load-more?offset=${offset}` + (genre ? `&genre=${encodeURIComponent(genre)}` : '');
+
+      fetch(url)
+        .then(r => r.json())
+        .then(data => {
+          data.movies.forEach(m => {
+            grid.insertAdjacentHTML('beforeend', buildCard(m));
+          });
+
+          showing += data.movies.length;
+          btn.dataset.offset = offset + 24;
+          countEl.textContent = `Showing ${showing} movies`;
+
+          btn.classList.remove('loading');
+
+          if (!data.has_more) {
+            btn.disabled = true;
+            btn.querySelector('.btn-text').textContent = 'All movies loaded';
+          } else {
+            btn.disabled = false;
+          }
+        })
+        .catch(() => {
+          btn.classList.remove('loading');
+          btn.disabled = false;
+        });
+    });
+  }
+</script>
+</body>
+</html>
